@@ -36,22 +36,27 @@ size_t ULListStr::size() const
       head_=tail_=new Item;
       head_->first=0;
       head_->last=1;
-      head_->val[0]=val;
+      size_=1;
+      set(0,val);
     }
 
-    if(tail_->last!=10){
-      set(tail_->last, val);
+    else if(tail_->last<10){
+      
       tail_->last++;
+      size_++;
+      set(size_-1, val);
     }
     else{
       Item* newNode = new Item;
       newNode->prev=tail_;
+      newNode->first=0;
+      newNode->last=1;
       tail_->next=newNode;
       tail_=newNode;
-      set(tail_->first,val);
-      tail_->last+=1;
+      size_++;
+      set(size_-1,val);
     }
-    size_++;
+    
   }
 
   /**
@@ -60,8 +65,20 @@ size_t ULListStr::size() const
    */
   void ULListStr::pop_back(){
     //tail_->val[tail_->last];
+    
     tail_->last--;
     size_--;
+    if (tail_->first==tail_->last){
+      Item* temp=tail_;
+      tail_=tail_->prev;
+      if (tail_){
+        tail_->next=nullptr;
+      }
+      else{
+        head_=nullptr;
+      }
+      delete temp;
+    }
   }
   
   /**
@@ -72,20 +89,32 @@ size_t ULListStr::size() const
    *   - MUST RUN in O(1)
    */
   void ULListStr::push_front(const std::string& val){
-    if(head_->first==0){
-      Item* newfront = new Item;
-      head_->prev = newfront;
-      newfront->next=head_;
-      head_=newfront;
+
+    if(empty()){
+      head_=tail_=new Item;
       head_->last=10;
       head_->first=9;
-      set(head_->first,val);
+      size_=1;
+      set(0,val);
+    }
+    else if(head_->first>0){
+      head_->first--;
+      size_++;
+      set(0,val);
     }
     else{
-      head_->first--;
-      set(head_->first,val);
+      Item* newfront = new Item;
+      head_->prev = newfront;
+      newfront->last=10;
+      newfront->first=9;
+      newfront->next=head_;
+      head_=newfront;
+      size_++;
+      set(0,val);
     }
-    size_++;
+
+    
+    
   }
 
   /**
@@ -93,10 +122,20 @@ size_t ULListStr::size() const
    *   - MUST RUN in O(1)
    */
   void ULListStr::pop_front(){
-
-
-
+    head_->first ++;
     size_--;
+    if(head_->last==head_->first){
+      Item* temp=head_;
+      head_=head_->next;
+      if(head_){
+        head_->prev=nullptr;
+      }
+      else{
+        tail_=nullptr;
+      }
+      delete temp;
+    }
+
   }
   
   /**
@@ -105,7 +144,7 @@ size_t ULListStr::size() const
    */
   std::string const & ULListStr::back() const{
 
-    return get((tail_->last)-1);
+    return tail_->val[tail_->last-1];
   }
 
   /**
@@ -113,13 +152,30 @@ size_t ULListStr::size() const
    *   - MUST RUN in O(1)
    */
   std::string const & ULListStr::front() const{
-    return get(head_->first);
+
+    return head_->val[head_->first];
   }
 //////////check if those are const////////////////////////////////////////////////////////////////////////////////////
 
 
  std::string* ULListStr::getValAtLoc(size_t loc) const{
+    if(size_<=loc){
+      return nullptr;
+    }
+    Item* curr=head_;
+    while (curr!=nullptr){
+      size_t num = curr->last -curr->first;
+      if (loc<num){
 
+        size_t index = curr->first + loc;
+        const std::string* temp = &(curr->val[index]);
+   
+        return const_cast<std::string*>(temp);
+      }
+      loc-=num;
+      curr=curr->next;
+    }
+    return nullptr;
  }
 
 
